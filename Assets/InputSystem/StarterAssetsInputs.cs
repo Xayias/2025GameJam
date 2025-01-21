@@ -86,6 +86,12 @@ namespace StarterAssets
 		{
 			Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
 		}
+
+		// Reset shoot input each frame after it's processed
+		private void LateUpdate()
+		{
+			shoot = false; // Reset the shoot input after it has been processed
+		}
 	}
 	
 }
