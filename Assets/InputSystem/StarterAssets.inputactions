@@ -242,7 +242,7 @@
                 {
                     "name": "",
                     "id": "aab2ff06-7103-4db7-8c01-e432f70bd14a",
-                    "path": "<Gamepad>/leftTrigger",
+                    "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

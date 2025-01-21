@@ -181,6 +181,7 @@ namespace StarterAssets
             if (_input.shoot && Time.time >= _lastShootTime + shootCooldown)
             {
                 ShootBubble();
+                Debug.Log("Is Shooting");
                 _lastShootTime = Time.time;
             }
         }
