@@ -98,6 +98,15 @@ namespace StarterAssets
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
 
+        // Bubble Gun Variables
+        [Header("Bubble Gun Settings")]
+        public GameObject bubblePrefab; // The bubble bullet prefab
+        public Transform shootPoint;   // Where the bubble spawns from
+        public float shootForce = 10f; // Speed of the bubble bullet
+        public float shootCooldown = 0.5f; // Time between shots
+
+        private float _lastShootTime; // Tracks cooldown between shots
+
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
 #endif
@@ -159,11 +168,35 @@ namespace StarterAssets
             JumpAndGravity();
             GroundedCheck();
             Move();
+            HandleShooting(); // Handle shooting logic
         }
 
         private void LateUpdate()
         {
             CameraRotation();
+        }
+
+        private void HandleShooting()
+        {
+            if (_input.shoot && Time.time >= _lastShootTime + shootCooldown)
+            {
+                ShootBubble();
+                _lastShootTime = Time.time;
+            }
+        }
+
+        private void ShootBubble()
+        {
+            if (bubblePrefab != null && shootPoint != null)
+            {
+                // Spawn and shoot bubble
+                GameObject bubble = Instantiate(bubblePrefab, shootPoint.position, shootPoint.rotation);
+                Rigidbody bubbleRb = bubble.GetComponent<Rigidbody>();
+                if (bubbleRb != null)
+                {
+                    bubbleRb.velocity = shootPoint.forward * shootForce; // Launch the bubble forward
+                }
+            }
         }
 
         private void AssignAnimationIDs()
