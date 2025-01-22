@@ -25,8 +25,12 @@ public class BubbleBullet : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        rb.isKinematic = false; // Enable physics
-        rb.velocity = transform.forward * forwardSpeed; // Initial forward movement
+
+        // Ensure the Rigidbody has velocity set by the shooting script
+        if (rb.velocity == Vector3.zero)
+        {
+            Debug.LogWarning($"{gameObject.name} has no initial velocity! Did the shooter set it?");
+        }
 
         // Schedule the bubble to pop after maxLifetime if it doesn't hit anything
         Invoke(nameof(PopBubble), maxLifetime);
@@ -52,6 +56,11 @@ public class BubbleBullet : MonoBehaviour
             {
                 capturedEnemy.position = transform.position; // Keep enemy inside the bubble
             }
+        }
+
+        if (rb != null)
+        {
+            Debug.Log($"Current Rigidbody Velocity: {rb.velocity}");
         }
     }
 
