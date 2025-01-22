@@ -19,6 +19,9 @@ public class WaveManager : MonoBehaviour
     [Header("Spawn Point Settings")]
     public SpawnPoint[] spawnPoints; // Array of spawn points
 
+    [Header("Wave Configurations")]
+    public WaveConfiguration[] waves; // Array of wave configurations
+
     private int currentWave = 0;
     private bool isGameOver = false;
 
@@ -34,9 +37,10 @@ public class WaveManager : MonoBehaviour
         if (isGameOver)
             yield break;
 
+        Debug.Log($"Starting Wave {currentWave + 1}");
+
         // Display the "Wave Starting" text on the UI
-        currentWave++;
-        waveUIText.text = $"Wave {currentWave} Starting!";
+        waveUIText.text = $"Wave {currentWave + 1} Starting!";
         waveUIText.gameObject.SetActive(true);
 
         // Wait 2 seconds to display the wave starting message
@@ -45,21 +49,26 @@ public class WaveManager : MonoBehaviour
         waveUIText.gameObject.SetActive(false);
 
         // Spawn the enemies for this wave
-        StartCoroutine(SpawnEnemiesForWave(currentWave));
+        yield return StartCoroutine(SpawnEnemiesForWave(currentWave));
+        Debug.Log($"All enemies for Wave {currentWave} spawned.");
 
         // Wait until all enemies are cleared
         while (AreEnemiesRemaining())
         {
             yield return null; // Wait until all enemies are gone
         }
+        Debug.Log($"Wave {currentWave} complete.");
 
         // Check if it's the last wave
-        if (currentWave >= totalWaves)
+        if (currentWave >= totalWaves - 1)
         {
             EndGame(true); // Game won after the 10th wave
         }
         else
         {
+            // increment wave counter
+            currentWave++; // Only increment AFTER the current wave is fully completed
+
             // Start the countdown before the next wave
             StartCoroutine(CountdownBeforeNextWave());
         }
@@ -83,26 +92,60 @@ public class WaveManager : MonoBehaviour
         StartCoroutine(StartNextWave());
     }
 
-    private IEnumerator SpawnEnemiesForWave(int waveNumber)
+    private SpawnPoint GetAvailableSpawnPoint()
     {
-        for (int i = 0; i < enemyPrefabs.Length; i++) // Iterate through enemy types
+        // Get all spawn points that are available (CanSpawn() == true)
+        List<SpawnPoint> availableSpawnPoints = new List<SpawnPoint>();
+
+        foreach (SpawnPoint spawnPoint in spawnPoints)
         {
-            int enemiesToSpawn = enemiesPerWave[i]; // Get the number of this enemy type to spawn
+            if (spawnPoint.CanSpawn())
+            {
+                availableSpawnPoints.Add(spawnPoint);
+            }
+        }
+
+        // If no spawn points are available, return null (WaveManager will wait)
+        if (availableSpawnPoints.Count == 0) return null;
+
+        // Return a random available spawn point
+        return availableSpawnPoints[Random.Range(0, availableSpawnPoints.Count)];
+    }
+
+    private IEnumerator SpawnEnemiesForWave(int waveIndex)
+    {
+        Debug.Log($"Spawning enemies for Wave {waveIndex}");
+
+        // Get the current wave configuration
+        if (waveIndex < 0 || waveIndex >= waves.Length) yield break;
+        WaveConfiguration currentWave = waves[waveIndex];
+
+        // Loop through each enemy type in the wave
+        for (int i = 0; i < currentWave.enemyCounts.Length; i++)
+        {
+            int enemiesToSpawn = currentWave.enemyCounts[i]; // Number of enemies for this type
+
             for (int j = 0; j < enemiesToSpawn; j++)
             {
-                // Spawn at a random spawn point
-                SpawnPoint spawnPoint = GetRandomSpawnPoint();
+                SpawnPoint spawnPoint = null;
+
+                // Wait until a spawn point is available
+                while (spawnPoint == null)
+                {
+                    spawnPoint = GetAvailableSpawnPoint();
+                    yield return null; // Wait a frame and check again
+                }
+
+                // Spawn the enemy at the available spawn point
                 spawnPoint.SpawnEnemy(enemyPrefabs[i]);
 
-                // Optional delay between enemy spawns
+                Debug.Log($"Spawned enemy {enemyPrefabs[i].name} at {spawnPoint.name}");
+
+                // Optional: Add a delay between spawns for smoother pacing
                 yield return new WaitForSeconds(0.5f);
             }
         }
-    }
-
-    private SpawnPoint GetRandomSpawnPoint()
-    {
-        return spawnPoints[Random.Range(0, spawnPoints.Length)];
+        Debug.Log($"Finished spawning enemies for Wave {waveIndex}");
     }
 
     private bool AreEnemiesRemaining()
