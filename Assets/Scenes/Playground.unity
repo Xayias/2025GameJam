@@ -391,12 +391,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &725937421 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6249018603849979434, guid: b4ac652b80c6b1d45ae2a9d55997be38,
-    type: 3}
-  m_PrefabInstance: {fileID: 2049361237}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &746329221
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3076,8 +3070,6 @@ MonoBehaviour:
   shootPoint: {fileID: 766246516}
   shootForce: 10
   shootCooldown: 0.5
-  upperBodyBone: {fileID: 725937421}
-  aimSensitivity: 10
 --- !u!143 &4416926083347132233
 CharacterController:
   m_ObjectHideFlags: 0

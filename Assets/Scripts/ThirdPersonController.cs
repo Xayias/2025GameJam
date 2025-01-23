@@ -105,9 +105,6 @@ namespace StarterAssets
         public float shootForce = 10f; // Speed of the bubble bullet
         public float shootCooldown = 0.5f; // Time between shots
 
-        public Transform upperBodyBone; // Assign the spine or chest bone here
-        public float aimSensitivity = 10f; // Adjust rotation speed
-
         private float _lastShootTime; // Tracks cooldown between shots
 
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
@@ -172,26 +169,6 @@ namespace StarterAssets
             GroundedCheck();
             Move();
             HandleShooting(); // Handle shooting logic
-            HandleAiming();
-        }
-
-        private void HandleAiming()
-        {
-            if (upperBodyBone == null || Camera.main == null)
-                return;
-
-            // Get the camera's forward direction
-            Camera mainCamera = Camera.main;
-            Vector3 cameraForward = mainCamera.transform.forward;
-            Vector3 cameraRight = mainCamera.transform.right;
-
-            // Rotate the upper body to match the camera's direction
-            Quaternion targetRotation = Quaternion.LookRotation(cameraForward, Vector3.up);
-            upperBodyBone.rotation = Quaternion.Slerp(upperBodyBone.rotation, targetRotation, Time.deltaTime * aimSensitivity);
-
-            // Optional: Make the character body rotate with the camera when turning
-            float cameraYaw = mainCamera.transform.eulerAngles.y;
-            transform.rotation = Quaternion.Euler(0, cameraYaw, 0);
         }
 
         private void LateUpdate()
@@ -215,63 +192,13 @@ namespace StarterAssets
         {
             if (bubblePrefab != null && shootPoint != null)
             {
-                // Get the camera's forward direction and target point
-                Camera mainCamera = Camera.main;
-                Ray cameraRay = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
-                RaycastHit hit;
-
-                Vector3 targetPoint;
-
-                // If the ray hits something, use the hit point as the target
-                if (Physics.Raycast(cameraRay, out hit, Mathf.Infinity))
-                {
-                    targetPoint = hit.point;
-                }
-                else
-                {
-                    // Otherwise, shoot in the forward direction of the camera
-                    targetPoint = cameraRay.GetPoint(1000); // Arbitrary far distance
-                }
-
-                // Align the shootPoint's forward direction with the camera
-                shootPoint.forward = Camera.main.transform.forward;
-                Debug.Log($"ShootPoint Forward (Aligned): {shootPoint.forward}");
-
-                // Calculate the shooting direction
-                Vector3 shootDirection = (targetPoint - shootPoint.position).normalized;
-
-                // Flip the direction if the ShootPoint is facing backward
-                if (Vector3.Dot(shootPoint.forward, shootDirection) < 0)
-                {
-                    shootDirection = -shootDirection;
-                }
-
-                // Spawn and shoot the bubble
-                GameObject bubble = Instantiate(bubblePrefab, shootPoint.position, Quaternion.identity);
-
+                // Spawn and shoot bubble
+                GameObject bubble = Instantiate(bubblePrefab, shootPoint.position, shootPoint.rotation);
                 Rigidbody bubbleRb = bubble.GetComponent<Rigidbody>();
                 if (bubbleRb != null)
                 {
-                    bubbleRb.velocity = shootDirection * shootForce;
-                    Debug.Log($"Bubble velocity set to: {bubbleRb.velocity}"); // Debug log
+                    bubbleRb.velocity = shootPoint.forward * shootForce; // Launch the bubble forward
                 }
-
-                // Align the bubble's rotation to the shoot direction (optional, for visual effect)
-                bubble.transform.rotation = Quaternion.LookRotation(shootDirection);
-
-                // Debugging: Visualize the raycast and shooting direction
-                Debug.DrawRay(cameraRay.origin, cameraRay.direction * 1000, Color.red, 2f);
-                Debug.DrawLine(shootPoint.position, targetPoint, Color.blue, 2f);
-                Debug.Log($"Shooting toward: {targetPoint} with direction: {shootDirection}");
-                Debug.Log($"Bubble instantiated at: {bubble.transform.position}");
-                Debug.Log($"ShootPoint Forward: {shootPoint.forward}");
-                Debug.Log($"Camera Forward: {Camera.main.transform.forward}");
-
-                // Draw the camera's forward ray
-                Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * 10f, Color.red, 2f); // Red ray
-
-                // Draw the shootPoint's forward ray
-                Debug.DrawRay(shootPoint.position, shootPoint.forward * 10f, Color.blue, 2f); // Blue ray
             }
         }
 
@@ -462,33 +389,6 @@ namespace StarterAssets
             if (lfAngle < -360f) lfAngle += 360f;
             if (lfAngle > 360f) lfAngle -= 360f;
             return Mathf.Clamp(lfAngle, lfMin, lfMax);
-        }
-
-        private void OnAnimatorIK(int layerIndex)
-        {
-            if (_animator == null || Camera.main == null)
-                return;
-
-            // Get the target point the camera is aiming at
-            Camera mainCamera = Camera.main;
-            Ray cameraRay = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
-            RaycastHit hit;
-
-            Vector3 targetPoint;
-            if (Physics.Raycast(cameraRay, out hit, Mathf.Infinity))
-            {
-                targetPoint = hit.point;
-            }
-            else
-            {
-                targetPoint = cameraRay.GetPoint(1000); // Arbitrary far point
-            }
-
-            // Set the IK target for the right hand (rifle aiming)
-            _animator.SetIKPositionWeight(AvatarIKGoal.RightHand, 1);
-            _animator.SetIKRotationWeight(AvatarIKGoal.RightHand, 1);
-            _animator.SetIKPosition(AvatarIKGoal.RightHand, targetPoint);
-            _animator.SetIKRotation(AvatarIKGoal.RightHand, Quaternion.LookRotation(targetPoint - transform.position));
         }
 
         private void OnDrawGizmosSelected()

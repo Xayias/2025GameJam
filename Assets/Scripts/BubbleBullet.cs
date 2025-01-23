@@ -57,11 +57,6 @@ public class BubbleBullet : MonoBehaviour
                 capturedEnemy.position = transform.position; // Keep enemy inside the bubble
             }
         }
-
-        if (rb != null)
-        {
-            Debug.Log($"Current Rigidbody Velocity: {rb.velocity}");
-        }
     }
 
     private void OnTriggerEnter(Collider other)
