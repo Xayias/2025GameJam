@@ -21,12 +21,15 @@ public class BubbleBullet : MonoBehaviour
 
     private float wobbleOffset = 0f; // Tracks the current horizontal wobble offset
 
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        rb.isKinematic = false; // Enable physics
-        rb.velocity = transform.forward * forwardSpeed; // Initial forward movement
+        rb.velocity = transform.forward * forwardSpeed;
 
         // Schedule the bubble to pop after maxLifetime if it doesn't hit anything
         Invoke(nameof(PopBubble), maxLifetime);

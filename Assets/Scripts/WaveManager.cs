@@ -37,8 +37,6 @@ public class WaveManager : MonoBehaviour
         if (isGameOver)
             yield break;
 
-        Debug.Log($"Starting Wave {currentWave + 1}");
-
         // Display the "Wave Starting" text on the UI
         waveUIText.text = $"Wave {currentWave + 1} Starting!";
         waveUIText.gameObject.SetActive(true);
@@ -50,7 +48,6 @@ public class WaveManager : MonoBehaviour
 
         // Spawn the enemies for this wave
         yield return StartCoroutine(SpawnEnemiesForWave(currentWave));
-        Debug.Log($"All enemies for Wave {currentWave} spawned.");
 
         // Wait until all enemies are cleared
         while (AreEnemiesRemaining())
@@ -114,7 +111,6 @@ public class WaveManager : MonoBehaviour
 
     private IEnumerator SpawnEnemiesForWave(int waveIndex)
     {
-        Debug.Log($"Spawning enemies for Wave {waveIndex}");
 
         // Get the current wave configuration
         if (waveIndex < 0 || waveIndex >= waves.Length) yield break;
@@ -139,13 +135,10 @@ public class WaveManager : MonoBehaviour
                 // Spawn the enemy at the available spawn point
                 spawnPoint.SpawnEnemy(enemyPrefabs[i]);
 
-                Debug.Log($"Spawned enemy {enemyPrefabs[i].name} at {spawnPoint.name}");
-
                 // Optional: Add a delay between spawns for smoother pacing
                 yield return new WaitForSeconds(0.5f);
             }
         }
-        Debug.Log($"Finished spawning enemies for Wave {waveIndex}");
     }
 
     private bool AreEnemiesRemaining()
