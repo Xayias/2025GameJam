@@ -21,16 +21,15 @@ public class BubbleBullet : MonoBehaviour
 
     private float wobbleOffset = 0f; // Tracks the current horizontal wobble offset
 
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
-
-        // Ensure the Rigidbody has velocity set by the shooting script
-        if (rb.velocity == Vector3.zero)
-        {
-            Debug.LogWarning($"{gameObject.name} has no initial velocity! Did the shooter set it?");
-        }
+        rb.velocity = transform.forward * forwardSpeed;
 
         // Schedule the bubble to pop after maxLifetime if it doesn't hit anything
         Invoke(nameof(PopBubble), maxLifetime);
