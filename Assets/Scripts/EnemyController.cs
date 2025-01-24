@@ -5,56 +5,90 @@ using UnityEngine.AI;
 
 public class EnemyController : MonoBehaviour
 {
+    [Header("Enemy Settings")]
     public float speed = 3f; // Base speed for the enemy
+    public float damage = 10f; // Damage dealth to control points
+    public float playerDetectionRadius = 10f;
+    public float stoppingDistance = 2f;
+
+    [Header("References")]
+    private ControlPoint targetControlPoint; // Target control point
     private Transform player; // Reference to the player's transform
     private NavMeshAgent navMeshAgent; // For navigation (optional, if using NavMesh)
 
     private bool isCaptured = false; // Tracks if the enemy is in a bubble
-
-    //private Rigidbody rb;
-    //private Animator animator;
+    private bool isAttacking = false; // Prevents multiple attacks per second
 
     // Start is called before the first frame update
     void Start()
     {
-        //rb = GetComponent<Rigidbody>();
-        //animator = GetComponent<Animator>();
-
-        player = GameObject.FindGameObjectWithTag("Player").transform; // Find the player by tag
+        // Get the NavMeshAgent component
         navMeshAgent = GetComponent<NavMeshAgent>();
 
         if (navMeshAgent != null)
         {
             navMeshAgent.speed = speed; // Set the NavMeshAgent's speed
+            navMeshAgent.stoppingDistance = stoppingDistance;
         }
+
+        // Find the player by tag
+        player = GameObject.FindGameObjectWithTag("Player").transform;
+
+        // Find the closest control point
+        FindClosestControlPoint();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (isCaptured) return; // Do nothing if captured in a bubble
+        if (isCaptured) return; // Stop all logic if captured
 
-        if (player != null)
+        // If the player is within range, target them
+        if (PlayerIsWithinRange())
         {
-            if (navMeshAgent != null)
+            MoveTowards(player.position);
+
+            // If within stopping distance of the player, attack
+            if (IsWithinStoppingDistance(player.position))
             {
-                // Use NavMeshAgent for navigation
-                navMeshAgent.SetDestination(player.position);
-            }
-            else
-            {
-                // Use basic movement logic if NavMesh is not used
-                Vector3 direction = (player.position - transform.position).normalized;
-                transform.position += direction * speed * Time.deltaTime;
+                AttackPlayer();
             }
         }
-        //if (!isCaptured)
-        //{
-            // Basic movement toward the player
-            //Transform player = GameObject.FindGameObjectWithTag("Player").transform;
-            //Vector3 direction = (player.position - transform.position).normalized;
-            //rb.MovePosition(transform.position + direction * Time.deltaTime * 2f);
-        //}
+        // Otherwise, target the closest control point
+        else if (targetControlPoint != null)
+        {
+            // Check if the control point is destroyed
+            if (targetControlPoint.isDestroyed)
+            {
+                FindClosestControlPoint();
+            }
+
+            if (targetControlPoint != null)
+            {
+                MoveTowards(targetControlPoint.transform.position);
+
+                // If within stopping distance of the control point, attack
+                if (IsWithinStoppingDistance(targetControlPoint.transform.position))
+                {
+                    AttackControlPoint();
+                }
+            }
+        }
+    }
+
+    private bool PlayerIsWithinRange()
+    {
+        // Check if the player is within the detection radius
+        if (player == null) return false; // Ensure player exists
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        return distanceToPlayer <= playerDetectionRadius;
+    }
+
+    private bool IsWithinStoppingDistance(Vector3 targetPosition)
+    {
+        // Check if the enemy is within stopping distance of the target
+        float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
+        return distanceToTarget <= stoppingDistance;
     }
 
     public void CaptureInBubble(Transform bubbleTransform)
@@ -73,8 +107,6 @@ public class EnemyController : MonoBehaviour
             speed = 0; // Stop basic movement
         }
 
-        //rb.isKinematic = true; // Stop physics-based movement
-        //rb.velocity = Vector3.zero; // Stop any momentum
         transform.SetParent(bubbleTransform); // Attach to bubble
         transform.localPosition = Vector3.zero;
 
@@ -85,14 +117,75 @@ public class EnemyController : MonoBehaviour
         //}
     }
 
-    // Optional: Call this to set the enemy's speed dynamically
-    public void SetSpeed(float newSpeed)
+    private void MoveTowards(Vector3 targetPosition)
     {
-        speed = newSpeed;
-
         if (navMeshAgent != null)
         {
-            navMeshAgent.speed = newSpeed;
+            // Use NavMeshAgent for movement
+            navMeshAgent.SetDestination(targetPosition);
         }
+        else
+        {
+            // Fallback: Use basic movement if NavMeshAgent is not available
+            Vector3 direction = (targetPosition - transform.position).normalized;
+            transform.position += direction * speed * Time.deltaTime;
+        }
+    }
+
+    private void FindClosestControlPoint()
+    {
+        // If no control points remain, stop all behavior
+        if (!ControlPoint.HasRemainingControlPoints())
+        {
+            StopAllBehavior();
+            return;
+        }
+
+        // Find all control points in the scene
+        ControlPoint[] controlPoints = FindObjectsOfType<ControlPoint>();
+        float shortestDistance = Mathf.Infinity;
+
+        foreach (ControlPoint controlPoint in controlPoints)
+        {
+            if (controlPoint.isDestroyed) continue; // Skip destroyed control points
+
+            float distance = Vector3.Distance(transform.position, controlPoint.transform.position);
+            if (distance < shortestDistance)
+            {
+                shortestDistance = distance;
+                targetControlPoint = controlPoint;
+            }
+        }
+    }
+
+    private void AttackControlPoint()
+    {
+        if (isAttacking) return; // Prevent multiple attack triggers
+        isAttacking = true;
+
+        // Damage the control point
+        targetControlPoint.TakeDamage(damage);
+        Debug.Log($"Attacking Control Point: {targetControlPoint.name}");
+
+        // Allow another attack after a short delay (e.g., 1 second)
+        Invoke(nameof(ResetAttack), 1f);
+    }
+
+    private void ResetAttack()
+    {
+        isAttacking = false;
+    }
+
+    private void StopAllBehavior()
+    {
+        Debug.Log("All control points are destroyed. Enemy is idle.");
+        // Optional: Add idle animation or logic here
+        enabled = false; // Disable this script to stop enemy behavior
+    }
+
+    private void AttackPlayer()
+    {
+        // Player damage logic will be added later
+        Debug.Log("Attacking Player!");
     }
 }
