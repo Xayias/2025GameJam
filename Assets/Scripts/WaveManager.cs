@@ -143,7 +143,14 @@ public class WaveManager : MonoBehaviour
 
     private bool AreEnemiesRemaining()
     {
-        return GameObject.FindGameObjectsWithTag("Enemy").Length > 0;
+        // Find all enemies with the "Enemy" tag
+        int enemiesWithTagEnemy = GameObject.FindGameObjectsWithTag("Enemy").Length;
+
+        // Find all enemies with the "GermAlienEnemy" tag
+        int enemiesWithTagGermAlien = GameObject.FindGameObjectsWithTag("GermAlienEnemy").Length;
+
+        // Return true if there are any enemies with either tag
+        return (enemiesWithTagEnemy > 0 || enemiesWithTagGermAlien > 0);
     }
 
     private void EndGame(bool hasWon)

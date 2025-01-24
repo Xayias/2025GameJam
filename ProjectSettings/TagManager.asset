@@ -7,6 +7,9 @@ TagManager:
   - CinemachineTarget
   - Enemy
   - ControlPoint
+  - Bubble
+  - ToxicGasCloud
+  - GermAlienEnemy
   layers:
   - Default
   - TransparentFX

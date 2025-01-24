@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class DestroyEffect : MonoBehaviour
 {
+    public float TimeToDestroy = 0.3f;
+
     // Start is called before the first frame update
     void Start()
     {
-        Destroy(gameObject, 0.5f);
+        Destroy(gameObject, TimeToDestroy);
     }
 }
