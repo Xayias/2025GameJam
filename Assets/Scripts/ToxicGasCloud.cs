@@ -67,5 +67,9 @@ public class ToxicGasCloud : MonoBehaviour
                 bubble.AbsorbGasCloud(this); // Implement this function in BubbleBullet
             }
         }
+        else if (!other.CompareTag("Player") && !other.CompareTag("Bubble") && !other.CompareTag("ControlPoint"))
+        {
+            Destroy(gameObject);
+        }
     }
 }

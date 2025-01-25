@@ -13,6 +13,11 @@ public class HealthPickup : MonoBehaviour
 
     private Vector3 startPosition;
 
+    private void Start()
+    {
+        startPosition = transform.position;
+    }
+
     private void Update()
     {
         // Make the green block spin

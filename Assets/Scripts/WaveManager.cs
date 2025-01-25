@@ -36,6 +36,13 @@ public class WaveManager : MonoBehaviour
     private void SpawnHealthPickup()
     {
         if (healthPickupPrefab == null || healthPickupSpawnPoints.Length == 0) return;
+
+        // Check if a health pickup already exists in the scene
+        if (GameObject.FindObjectOfType<HealthPickup>() != null)
+        {
+            Debug.Log("A health pickup is already active. Skipping spawn.");
+            return; // Do not spawn another one
+        }
     
         // Get a random spawn point
         Transform randomSpawnPoint = healthPickupSpawnPoints[Random.Range(0, healthPickupSpawnPoints.Length)];
