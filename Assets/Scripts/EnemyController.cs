@@ -13,15 +13,15 @@ public class EnemyController : MonoBehaviour
 
     [Header("Attack Cooldowns")]
     public float attackCooldown = 1f; // Cooldown between attacks
-    private float lastAttackTime; // Time of the last attack
+    public float lastAttackTime; // Time of the last attack
 
     [Header("References")]
-    private ControlPoint targetControlPoint; // Target control point
-    private Transform player; // Reference to the player's transform
-    private NavMeshAgent navMeshAgent; // For navigation (optional, if using NavMesh)
+    public ControlPoint targetControlPoint; // Target control point
+    public Transform player; // Reference to the player's transform
+    public NavMeshAgent navMeshAgent; // For navigation (optional, if using NavMesh)
 
-    private bool isCaptured = false; // Tracks if the enemy is in a bubble
-    private bool isAttacking = false; // Prevents multiple attacks per second
+    public bool isCaptured = false; // Tracks if the enemy is in a bubble
+    public bool isAttacking = false; // Prevents multiple attacks per second
 
     // Start is called before the first frame update
     void Start()
@@ -67,7 +67,7 @@ public class EnemyController : MonoBehaviour
                 FindClosestControlPoint();
             }
 
-            if (targetControlPoint != null)
+            if (targetControlPoint != null && !targetControlPoint.isDestroyed)
             {
                 MoveTowards(targetControlPoint.transform.position);
 
@@ -77,6 +77,15 @@ public class EnemyController : MonoBehaviour
                     AttackControlPoint();
                 }
             }
+        }
+
+        if (targetControlPoint == null)
+        {
+            Debug.LogWarning("EnemyController: No target control point found.");
+        }
+        else if (targetControlPoint.isDestroyed)
+        {
+            Debug.LogWarning($"EnemyController: Target control point {targetControlPoint.name} is destroyed.");
         }
     }
 
@@ -160,11 +169,21 @@ public class EnemyController : MonoBehaviour
                 targetControlPoint = controlPoint;
             }
         }
+
+        if (targetControlPoint == null)
+        {
+            // No valid control points remain
+            StopAllBehavior();
+        }
     }
 
     private void AttackControlPoint()
     {
-        if (isAttacking) return; // Prevent multiple attack triggers
+        if (isAttacking || targetControlPoint == null || targetControlPoint.isDestroyed)
+        {
+            return; // Prevent attacking destroyed or null control points
+        }
+
         isAttacking = true;
 
         // Damage the control point
@@ -172,7 +191,7 @@ public class EnemyController : MonoBehaviour
         Debug.Log($"Attacking Control Point: {targetControlPoint.name}");
 
         // Allow another attack after a short delay (e.g., 1 second)
-        Invoke(nameof(ResetAttack), 1f);
+        Invoke(nameof(ResetAttack), attackCooldown);
     }
 
     private void ResetAttack()

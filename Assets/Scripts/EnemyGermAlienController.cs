@@ -8,19 +8,8 @@ public class EnemyGermAlienController : EnemyController
     [Header("Toxic Gas Settings")]
     public GameObject toxicGasPrefab; // Prefab for the toxic gas cloud
     public Transform attackPoint; // Point where the gas cloud spawns
-    public float attackCooldown = 3f; // Time between attacks
     public float attackRange = 10f; // Distance from target to attack
     public float toxicGasSpeed = 5f; // Speed of the gas cloud
-
-    private float lastAttackTime = 0f; // Tracks time of the last attack
-
-    [Header("References")]
-    private ControlPoint targetControlPoint; // Target control point
-    private Transform player; // Reference to the player's transform
-    private NavMeshAgent navMeshAgent; // For navigation (optional, if using NavMesh)
-
-    private bool isCaptured = false; // Tracks if the enemy is in a bubble
-    private bool isAttacking = false; // Prevents multiple attacks per second
 
     private void Start()
     {
@@ -63,7 +52,7 @@ public class EnemyGermAlienController : EnemyController
                 FindClosestControlPoint();
             }
 
-            if (targetControlPoint != null)
+            if (targetControlPoint != null && !targetControlPoint.isDestroyed)
             {
                 MoveTowards(targetControlPoint.transform.position, stopBeforeTarget: true);
 
@@ -175,6 +164,12 @@ public class EnemyGermAlienController : EnemyController
                 shortestDistance = distance;
                 targetControlPoint = controlPoint;
             }
+        }
+
+        if (targetControlPoint == null)
+        {
+            // No valid control points remain
+            StopAllBehavior();
         }
     }
 

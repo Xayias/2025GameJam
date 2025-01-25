@@ -8884,7 +8884,7 @@ MonoBehaviour:
     type: 3}
   shootPoint: {fileID: 766246516}
   shootForce: 10
-  shootCooldown: 0.5
+  shootCooldown: 1
 --- !u!114 &6982812147933622149
 MonoBehaviour:
   m_ObjectHideFlags: 0

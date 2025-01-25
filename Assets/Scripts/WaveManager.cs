@@ -86,6 +86,14 @@ public class WaveManager : MonoBehaviour
             yield return null; // Wait until all enemies are gone
         }
 
+        // Check if all control points are destroyed
+        if (!ControlPoint.HasRemainingControlPoints())
+        {
+            Debug.Log("WaveManager Script: All Control Points Destroyed. Triggering Game Over.");
+            GameManager.Instance.TriggerGameOver();
+            yield break; // Stop the wave logic
+        }
+
         // Check if it's the last wave
         if (currentWave >= totalWaves - 1)
         {

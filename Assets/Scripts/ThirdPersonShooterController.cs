@@ -63,44 +63,29 @@ public class ThirdPersonShooterController : MonoBehaviour
             animator.SetBool("isAiming", false);
         }
 
-        if (starterAssetsInputs.shoot)
-        {
-            Vector3 aimDir = (mouseWorldPosition - shootPoint.position).normalized;
-            // Trigger the shooting animation
-            animator.SetTrigger("Shoot"); // Plays the shooting animation
-            Instantiate(bubblePrefab, shootPoint.position, Quaternion.LookRotation(aimDir, Vector3.up));
-        }
-    }
-
-    /*
-    private void HandleShooting()
-    {
+        // Handle Shooting
         if (starterAssetsInputs.shoot && Time.time >= _lastShootTime + shootCooldown)
         {
-            ShootBubble();
-            _lastShootTime = Time.time;
-            starterAssetsInputs.shoot = false;
-
-            // Trigger the shooting animation
-            //_animator.SetTrigger("Shoot"); // Plays the shooting animation
+            ShootBubble(mouseWorldPosition);
+            _lastShootTime = Time.time; // Update the last shoot time
         }
     }
 
-    private void ShootBubble()
+    private void ShootBubble(Vector3 targetPosition)
     {
-        if (bubblePrefab != null && shootPoint != null)
-        {
-            Vector3 mouseWorldPosition = Vector3.zero;
+        Vector3 aimDir = (targetPosition - shootPoint.position).normalized;
 
-            Vector3 aimDir = (mouseWorldPosition - shootPoint.position).normalized;
-            // Spawn and shoot bubble
-            GameObject bubble = Instantiate(bubblePrefab, shootPoint.position, Quaternion.LookRotation(aimDir, Vector3.up));
-            Rigidbody bubbleRb = bubble.GetComponent<Rigidbody>();
-            if (bubbleRb != null)
-            {
-                bubbleRb.velocity = shootPoint.forward * shootForce; // Launch the bubble forward
-            }
+        // Trigger the shooting animation
+        animator.SetTrigger("Shoot"); // Plays the shooting animation
+
+        // Instantiate the bubble
+        GameObject bubble = Instantiate(bubblePrefab, shootPoint.position, Quaternion.LookRotation(aimDir, Vector3.up));
+
+        // Apply force to the bubble if it has a Rigidbody
+        Rigidbody bubbleRb = bubble.GetComponent<Rigidbody>();
+        if (bubbleRb != null)
+        {
+            bubbleRb.velocity = aimDir * shootForce;
         }
     }
-    */
 }

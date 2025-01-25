@@ -19,6 +19,7 @@ public class BubbleBullet : MonoBehaviour
     private Rigidbody rb;
     private bool isFloating = false; // Tracks if the bubble is in "floating" mode
     private Transform capturedEnemy = null; // Holds reference to the captured enemy
+    private bool hasCapturedEnemy = false;
     private bool hasAbsorbedGas = false; // Tracks if the bubble has absorbed a gas cloud
     private GameObject targetEnemy; // The enemy to target after absorbing the gas cloud
     private Renderer bubbleRenderer; // Renderer for the bubble's material
@@ -93,8 +94,12 @@ public class BubbleBullet : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        // Prevent capturing multiple enemies
+        if (hasCapturedEnemy) return;
+
         if (other.CompareTag("Enemy") && !hasAbsorbedGas)
         {
+            hasCapturedEnemy = true;
             CaptureEnemy(other.gameObject);
         }
         else if (other.CompareTag("GermAlienEnemy") && !hasAbsorbedGas)
@@ -105,6 +110,7 @@ public class BubbleBullet : MonoBehaviour
         {
             if (other.gameObject == targetEnemy)
             {
+                hasCapturedEnemy = true;
                 CaptureEnemy(other.gameObject); // Destroy the enemy and the bubble
             }
         }
@@ -124,6 +130,7 @@ public class BubbleBullet : MonoBehaviour
 
         if (other.CompareTag("EnemyShield"))
         {
+            hasCapturedEnemy = true;
             // Capture and destroy the shield
             CaptureEnemy(other.gameObject);
         }
@@ -132,6 +139,7 @@ public class BubbleBullet : MonoBehaviour
             ArmoredBossController boss = other.GetComponent<ArmoredBossController>();
             if (boss != null && boss.isVulnerable)
             {
+                hasCapturedEnemy = true;
                 Debug.Log("Bubble destroyed the Armored Boss!");
                 Destroy(boss.gameObject); // Destroy the boss
                 Destroy(gameObject); // Destroy the bubble

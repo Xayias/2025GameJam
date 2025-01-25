@@ -26,6 +26,12 @@ public class ControlPoint : MonoBehaviour
 
     private void Start()
     {
+        // Clear the list if this is the first control point to initialize in the scene
+        if (allControlPoints.Count == 0)
+        {
+            allControlPoints.Clear(); // Ensure the list is cleared on scene reload
+        }
+
         // Initialize health
         currentHealth = maxHealth;
 
@@ -80,22 +86,28 @@ public class ControlPoint : MonoBehaviour
         if (activeMesh != null) activeMesh.SetActive(false);
         if (destroyedMesh != null) destroyedMesh.SetActive(true);
 
+        // Remove the destroyed control point from the list
+        allControlPoints.Remove(this);
+
         // Check if all control points are destroyed
         CheckIfGameOver();
     }
 
     private static void CheckIfGameOver()
     {
+        Debug.Log("Checking if all control points are destroyed...");
+
         // Check if all control points are destroyed
         foreach (var controlPoint in allControlPoints)
         {
             if (!controlPoint.isDestroyed)
             {
+                Debug.Log($"Control point {controlPoint.name} is still active.");
                 return; // At least one control point is still active
             }
         }
 
-        // If all control points are destroyed, trigger the game-over condition
+        Debug.Log("All control points are destroyed. Triggering game over.");
         GameManager.Instance.TriggerGameOver();
     }
 
@@ -125,5 +137,10 @@ public class ControlPoint : MonoBehaviour
             TakeDamage(damage);
             lastAttackTime = Time.time;
         }
+    }
+
+    public static void ClearAllControlPoints()
+    {
+        allControlPoints.Clear();
     }
 }
