@@ -6,6 +6,12 @@ TagManager:
   tags:
   - CinemachineTarget
   - Enemy
+  - ControlPoint
+  - Bubble
+  - ToxicGasCloud
+  - GermAlienEnemy
+  - EnemyShield
+  - EnemyNeedler
   layers:
   - Default
   - TransparentFX

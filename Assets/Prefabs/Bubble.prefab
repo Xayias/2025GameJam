@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 1357213119057563212}
   m_Layer: 0
   m_Name: Bubble
-  m_TagString: Untagged
+  m_TagString: Bubble
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -30,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 4419447911127353904}
   m_LocalRotation: {x: -0, y: 0.70710677, z: -0, w: 0.7071069}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalScale: {x: 1.71716, y: 1.71716, z: 1.71716}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -129,10 +129,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   floatSpeed: 2
   forwardSpeed: 5
+  homingSpeed: 10
   floatDuration: 3
   maxLifetime: 5
   wobbleFrequency: 10
   wobbleMagnitude: 1
+  absorbedMaterial: {fileID: 2100000, guid: 1965ed8443b3fc94690699cb148d9f09, type: 2}
   popEffect: {fileID: 2490320181350942768, guid: 7663688da0462c740a16dcd44876971a,
     type: 3}
   popSound: {fileID: 8300000, guid: fae8256d878d53a4db226137e510013f, type: 3}
