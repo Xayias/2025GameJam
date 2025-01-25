@@ -99,7 +99,7 @@ public class BubbleBullet : MonoBehaviour
         }
         else if (other.CompareTag("GermAlienEnemy") && !hasAbsorbedGas)
         {
-            return;
+            PopBubble();
         }
         else if (other.CompareTag("GermAlienEnemy") && hasAbsorbedGas)
         {
@@ -121,6 +121,22 @@ public class BubbleBullet : MonoBehaviour
         {
             PopBubble(); // Trigger the pop effect and destroy the bubble
         }
+
+        if (other.CompareTag("EnemyShield"))
+        {
+            // Capture and destroy the shield
+            CaptureEnemy(other.gameObject);
+        }
+        else if (other.CompareTag("EnemyNeedler"))
+        {
+            ArmoredBossController boss = other.GetComponent<ArmoredBossController>();
+            if (boss != null && boss.isVulnerable)
+            {
+                Debug.Log("Bubble destroyed the Armored Boss!");
+                Destroy(boss.gameObject); // Destroy the boss
+                Destroy(gameObject); // Destroy the bubble
+            }
+        }
     }
 
     private void CaptureEnemy(GameObject enemy)
@@ -128,7 +144,7 @@ public class BubbleBullet : MonoBehaviour
         // Enter floating mode
         isFloating = true;
 
-        // Cancel the scheduled maxLifetime pop since we’re handling a new float timer
+        // Cancel the scheduled maxLifetime pop since weï¿½re handling a new float timer
         CancelInvoke(nameof(PopBubble));
 
         // Disable enemy movement and attach it to the bubble

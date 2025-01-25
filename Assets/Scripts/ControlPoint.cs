@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 public class ControlPoint : MonoBehaviour
 {
@@ -20,7 +21,8 @@ public class ControlPoint : MonoBehaviour
     public GameObject activeMesh; // The normal active mesh
     public bool isDestroyed = false; // Tracks if this control point is destroyed
 
-    private static int activeControlPoints = 0; // Tracks how many control points remain
+    // A static list to track all control points in the scene
+    private static List<ControlPoint> allControlPoints = new List<ControlPoint>();
 
     private void Start()
     {
@@ -34,8 +36,8 @@ public class ControlPoint : MonoBehaviour
             healthBar.value = currentHealth;
         }
 
-        // Increment the count of active control points
-        activeControlPoints++;
+        // Register this control point in the static list
+        allControlPoints.Add(this);
     }
 
     private void Update()
@@ -78,28 +80,36 @@ public class ControlPoint : MonoBehaviour
         if (activeMesh != null) activeMesh.SetActive(false);
         if (destroyedMesh != null) destroyedMesh.SetActive(true);
 
-        // Decrement the number of active control points
-        activeControlPoints--;
-
         // Check if all control points are destroyed
-        if (activeControlPoints <= 0)
-        {
-            TriggerGameOver();
-        }
+        CheckIfGameOver();
     }
 
-    private void TriggerGameOver()
+    private static void CheckIfGameOver()
     {
-        Debug.Log("Game Over! All control points have been destroyed.");
-        string currentSceneName = SceneManager.GetActiveScene().name;
-        SceneManager.LoadScene(currentSceneName);
-        // Add your game over logic here (e.g., show Game Over UI, stop the game, etc.)
-        // Example: GameManager.Instance.GameOver();
+        // Check if all control points are destroyed
+        foreach (var controlPoint in allControlPoints)
+        {
+            if (!controlPoint.isDestroyed)
+            {
+                return; // At least one control point is still active
+            }
+        }
+
+        // If all control points are destroyed, trigger the game-over condition
+        GameManager.Instance.TriggerGameOver();
     }
 
     public static bool HasRemainingControlPoints()
     {
-        return activeControlPoints > 0;
+        // Check if there are any active control points
+        foreach (var controlPoint in allControlPoints)
+        {
+            if (!controlPoint.isDestroyed)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public bool CanBeAttacked()

@@ -10,6 +10,8 @@ TagManager:
   - Bubble
   - ToxicGasCloud
   - GermAlienEnemy
+  - EnemyShield
+  - EnemyNeedler
   layers:
   - Default
   - TransparentFX

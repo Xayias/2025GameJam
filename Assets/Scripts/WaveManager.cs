@@ -10,7 +10,6 @@ public class WaveManager : MonoBehaviour
     public float timeBetweenWaves = 15f; // Time between waves
     public Text waveUIText; // UI Text for displaying wave info
     public Text countdownUIText; // UI Text for the countdown timer
-    public GameObject gameOverUI; // UI to show when the game ends
 
     [Header("Enemy Settings")]
     public GameObject[] enemyPrefabs; // Array of enemy types
@@ -22,8 +21,11 @@ public class WaveManager : MonoBehaviour
     [Header("Wave Configurations")]
     public WaveConfiguration[] waves; // Array of wave configurations
 
+    [Header("Health Pickup Settings")]
+    public GameObject healthPickupPrefab; // Reference to the health pickup prefab
+    public Transform[] healthPickupSpawnPoints; // Array of spawn points for health pickups
+
     private int currentWave = 0;
-    private bool isGameOver = false;
 
     // Start is called before the first frame update
     void Start()
@@ -31,12 +33,28 @@ public class WaveManager : MonoBehaviour
         StartCoroutine(StartNextWave());
     }
 
+    private void SpawnHealthPickup()
+    {
+        if (healthPickupPrefab == null || healthPickupSpawnPoints.Length == 0) return;
+    
+        // Get a random spawn point
+        Transform randomSpawnPoint = healthPickupSpawnPoints[Random.Range(0, healthPickupSpawnPoints.Length)];
+    
+        // Apply an offset to lift the pickup above the ground
+        Vector3 spawnPosition = randomSpawnPoint.position + new Vector3(0, 0.5f, 0); // Adjust Y offset (e.g., 0.5f)
+
+        // Check if the player's health is not full before spawning
+        PlayerHealth playerHealth = FindObjectOfType<PlayerHealth>();
+        if (playerHealth != null && playerHealth.currentHealth < playerHealth.maxHealth)
+        {
+            // Spawn the health pickup at the random spawn point
+            Instantiate(healthPickupPrefab, randomSpawnPoint.position, Quaternion.identity);
+            Debug.Log("Health pickup spawned!");
+        }
+    }
+
     private IEnumerator StartNextWave()
     {
-        // If the game is over, exit
-        if (isGameOver)
-            yield break;
-
         // Display the "Wave Starting" text on the UI
         waveUIText.text = $"Wave {currentWave + 1} Starting!";
         waveUIText.gameObject.SetActive(true);
@@ -46,6 +64,12 @@ public class WaveManager : MonoBehaviour
 
         waveUIText.gameObject.SetActive(false);
 
+        // Spawn health pickup every 3 waves
+        if ((currentWave + 1) % 3 == 0)
+        {
+            SpawnHealthPickup();
+        }
+
         // Spawn the enemies for this wave
         yield return StartCoroutine(SpawnEnemiesForWave(currentWave));
 
@@ -54,12 +78,12 @@ public class WaveManager : MonoBehaviour
         {
             yield return null; // Wait until all enemies are gone
         }
-        Debug.Log($"Wave {currentWave} complete.");
 
         // Check if it's the last wave
         if (currentWave >= totalWaves - 1)
         {
-            EndGame(true); // Game won after the 10th wave
+            Debug.Log("WaveManager Script: Win Game");
+            GameManager.Instance.TriggerWin();
         }
         else
         {
@@ -149,44 +173,10 @@ public class WaveManager : MonoBehaviour
         // Find all enemies with the "GermAlienEnemy" tag
         int enemiesWithTagGermAlien = GameObject.FindGameObjectsWithTag("GermAlienEnemy").Length;
 
+        // Find all enemies with the "Enemy" tag
+        int enemiesWithTagEnemyNeedler = GameObject.FindGameObjectsWithTag("EnemyNeedler").Length;
+
         // Return true if there are any enemies with either tag
-        return (enemiesWithTagEnemy > 0 || enemiesWithTagGermAlien > 0);
-    }
-
-    private void EndGame(bool hasWon)
-    {
-        isGameOver = true;
-
-        if (hasWon)
-        {
-            waveUIText.text = "You Win!";
-        }
-        else
-        {
-            waveUIText.text = "Game Over!";
-        }
-
-        waveUIText.gameObject.SetActive(true);
-        gameOverUI.SetActive(true);
-    }
-
-    // Call this when the player dies
-    private void PlayerDied()
-    {
-        // Uncomment this when implementing player health
-        // EndGame(false);
-    }
-
-    // Call this when all control points are destroyed
-    private void ControlPointsDestroyed()
-    {
-        // Uncomment this when implementing control point logic
-        // EndGame(false);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        return (enemiesWithTagEnemy > 0 || enemiesWithTagGermAlien > 0 || enemiesWithTagEnemyNeedler > 0);
     }
 }

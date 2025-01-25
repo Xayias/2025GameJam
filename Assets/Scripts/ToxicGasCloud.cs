@@ -40,11 +40,12 @@ public class ToxicGasCloud : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             // Deal damage over time to the player
-            //PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
-            //if (playerHealth != null)
-            //{
-            //playerHealth.TakeDamage(damagePerSecond * Time.deltaTime);
-            //}
+            PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(15);
+            }
+            Destroy(gameObject);
             Debug.Log("Gas Cloud Hits Player");
         }
         else if (other.CompareTag("ControlPoint"))
@@ -53,7 +54,7 @@ public class ToxicGasCloud : MonoBehaviour
             ControlPoint controlPoint = other.GetComponent<ControlPoint>();
             if (controlPoint != null)
             {
-                controlPoint.TakeDamage(5);
+                controlPoint.TakeDamage(15);
             }
             Destroy(gameObject);
         }

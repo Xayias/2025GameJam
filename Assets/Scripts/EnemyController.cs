@@ -11,6 +11,10 @@ public class EnemyController : MonoBehaviour
     public float playerDetectionRadius = 10f;
     public float stoppingDistance = 2f;
 
+    [Header("Attack Cooldowns")]
+    public float attackCooldown = 1f; // Cooldown between attacks
+    private float lastAttackTime; // Time of the last attack
+
     [Header("References")]
     private ControlPoint targetControlPoint; // Target control point
     private Transform player; // Reference to the player's transform
@@ -185,7 +189,16 @@ public class EnemyController : MonoBehaviour
 
     private void AttackPlayer()
     {
-        // Player damage logic will be added later
-        Debug.Log("Attacking Player!");
+        if (Time.time < lastAttackTime + attackCooldown) return; // Prevent multiple attacks
+
+        // Get the PlayerHealth component from the player
+        PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
+        if (playerHealth != null)
+        {
+            playerHealth.TakeDamage(damage); // Deal damage to the player
+            Debug.Log("Attacking Player!");
+        }
+
+        lastAttackTime = Time.time; // Update last attack time
     }
 }
