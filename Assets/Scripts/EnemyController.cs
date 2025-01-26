@@ -11,6 +11,9 @@ public class EnemyController : MonoBehaviour
     public float playerDetectionRadius = 10f;
     public float stoppingDistance = 2f;
 
+    [Header("Capture Settings")]
+    public float bubbleYOffset = -0.5f; // Offset to center the enemy in the bubble
+
     [Header("Attack Cooldowns")]
     public float attackCooldown = 1f; // Cooldown between attacks
     public float lastAttackTime; // Time of the last attack
@@ -19,6 +22,8 @@ public class EnemyController : MonoBehaviour
     public ControlPoint targetControlPoint; // Target control point
     public Transform player; // Reference to the player's transform
     public NavMeshAgent navMeshAgent; // For navigation (optional, if using NavMesh)
+    private Animator animator; // Reference to the Animator component
+    private string currentAnimationState;
 
     public bool isCaptured = false; // Tracks if the enemy is in a bubble
     public bool isAttacking = false; // Prevents multiple attacks per second
@@ -35,22 +40,39 @@ public class EnemyController : MonoBehaviour
             navMeshAgent.stoppingDistance = stoppingDistance;
         }
 
+        // Get the Animator component
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogError("Animator component not found on this GameObject!");
+        }
+
         // Find the player by tag
         player = GameObject.FindGameObjectWithTag("Player").transform;
 
         // Find the closest control point
         FindClosestControlPoint();
+
+        // Play initial running animation
+        PlayRunningAnimation();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (isCaptured) return; // Stop all logic if captured
+        if (isCaptured)
+        {
+            PlayFloatingAnimation();
+            return; // Stop all logic if captured
+        }
 
         // If the player is within range, target them
         if (PlayerIsWithinRange())
         {
             MoveTowards(player.position);
+
+            // Play running animation
+            PlayRunningAnimation();
 
             // If within stopping distance of the player, attack
             if (IsWithinStoppingDistance(player.position))
@@ -71,11 +93,19 @@ public class EnemyController : MonoBehaviour
             {
                 MoveTowards(targetControlPoint.transform.position);
 
+                // Play running animation
+                PlayRunningAnimation();
+
                 // If within stopping distance of the control point, attack
                 if (IsWithinStoppingDistance(targetControlPoint.transform.position))
                 {
                     AttackControlPoint();
                 }
+            }
+            else
+            {
+                // No target, play idle animation
+                PlayIdleAnimation();
             }
         }
 
@@ -121,13 +151,47 @@ public class EnemyController : MonoBehaviour
         }
 
         transform.SetParent(bubbleTransform); // Attach to bubble
-        transform.localPosition = Vector3.zero;
 
-        // Optional: Trigger animations or effects
-        //if (animator != null)
-        //{
-        //    animator.Play("Captured");
-        //}
+        // Adjust the local position of the main enemy object (default offset)
+        float defaultYOffset = -0.5f;
+        transform.localPosition = new Vector3(0, defaultYOffset, 0);
+
+        // Find the child object with the specific tag (e.g., "EnemyModel")
+        Transform childWithTag = GetChildWithTag("yOffset"); // Change "EnemyModel" to your tag
+        if (childWithTag != null)
+        {
+            float childYOffset = -1f; // Adjust this offset for the child object
+            childWithTag.localPosition = new Vector3(
+                childWithTag.localPosition.x, 
+                childYOffset, 
+                childWithTag.localPosition.z
+            );
+
+            Debug.Log($"Adjusted child '{childWithTag.name}' Y Offset: {childYOffset}");
+        }
+        else
+        {
+            Debug.LogWarning("Child with tag 'EnemyModel' not found!");
+        }
+
+        // Debug log to confirm the position
+        Debug.Log($"Enemy transform info:\n" +
+                  $"- World Position: {transform.position}\n" +
+                  $"- Local Position: {transform.localPosition}\n" +
+                  $"- Parent: {transform.parent.name}");
+    }
+
+    // Utility function to find a child with a specific tag
+    private Transform GetChildWithTag(string tag)
+    {
+        foreach (Transform child in transform) // Iterate through children of this object
+        {
+            if (child.CompareTag(tag))
+            {
+                return child;
+            }
+        }
+        return null; // Return null if no child with the tag is found
     }
 
     private void MoveTowards(Vector3 targetPosition)
@@ -210,6 +274,9 @@ public class EnemyController : MonoBehaviour
     {
         if (Time.time < lastAttackTime + attackCooldown) return; // Prevent multiple attacks
 
+        // Play attack animation
+        PlayAttackAnimation();
+
         // Get the PlayerHealth component from the player
         PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
         if (playerHealth != null)
@@ -219,5 +286,58 @@ public class EnemyController : MonoBehaviour
         }
 
         lastAttackTime = Time.time; // Update last attack time
+    }
+
+    private void ChangeAnimationState(string newState)
+    {
+        // Prevent interrupting the same animation
+        if (currentAnimationState == newState) return;
+    
+        // Update the animator with the new state
+        animator.Play(newState);
+    
+        // Update the current animation state
+        currentAnimationState = newState;
+    }
+
+    // Animation Methods
+    private void PlayRunningAnimation()
+    {
+        if (animator != null)
+        {
+            animator.SetBool("isRunning", true);
+            animator.SetBool("isAttacking", false);
+            animator.SetBool("isFloating", false);
+        }
+    }
+
+    private void PlayAttackAnimation()
+    {
+        if (animator != null)
+        {
+            animator.SetBool("isRunning", false);
+            animator.SetBool("isAttacking", true);
+            animator.SetBool("isFloating", false);
+        }
+    }
+
+    private void PlayIdleAnimation()
+    {
+        if (animator != null)
+        {
+            animator.SetBool("isRunning", false);
+            animator.SetBool("isAttacking", false);
+            animator.SetBool("isFloating", false);
+        }
+    }
+
+    private void PlayFloatingAnimation()
+    {
+        if (animator != null)
+        {
+            animator.SetBool("isRunning", false);
+            animator.SetBool("isAttacking", false);
+            animator.SetBool("isFloating", true);
+        }
     }
 }

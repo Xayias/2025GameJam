@@ -12,6 +12,7 @@ TagManager:
   - GermAlienEnemy
   - EnemyShield
   - EnemyNeedler
+  - yOffset
   layers:
   - Default
   - TransparentFX
