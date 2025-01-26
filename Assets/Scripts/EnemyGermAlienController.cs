@@ -52,7 +52,7 @@ public class EnemyGermAlienController : EnemyController
                 FindClosestControlPoint();
             }
 
-            if (targetControlPoint != null && !targetControlPoint.isDestroyed)
+            if (targetControlPoint != null)
             {
                 MoveTowards(targetControlPoint.transform.position, stopBeforeTarget: true);
 
@@ -73,24 +73,30 @@ public class EnemyGermAlienController : EnemyController
         return distanceToPlayer <= playerDetectionRadius;
     }
 
-    private void MoveTowards(Vector3 targetPosition, bool stopBeforeTarget)
+    protected void MoveTowards(Vector3 targetPosition, bool stopBeforeTarget = false)
+{
+    if (navMeshAgent != null)
     {
-        if (navMeshAgent != null)
-        {
-            // Set the NavMesh destination
-            navMeshAgent.SetDestination(targetPosition);
+        // Use NavMeshAgent for movement
+        navMeshAgent.SetDestination(targetPosition);
 
-            // Stop the enemy before getting too close
-            if (stopBeforeTarget && IsWithinStoppingDistance(targetPosition))
-            {
-                navMeshAgent.isStopped = true;
-            }
-            else
-            {
-                navMeshAgent.isStopped = false;
-            }
+        // Stop the enemy before getting too close
+        if (stopBeforeTarget && IsWithinStoppingDistance(targetPosition))
+        {
+            navMeshAgent.isStopped = true;
+        }
+        else
+        {
+            navMeshAgent.isStopped = false;
         }
     }
+    else
+    {
+        // Fallback: Use basic movement if NavMeshAgent is not available
+        Vector3 direction = (targetPosition - transform.position).normalized;
+        transform.position += direction * speed * Time.deltaTime;
+    }
+}
 
     private bool IsWithinAttackRange(Vector3 targetPosition)
     {

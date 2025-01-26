@@ -50,7 +50,7 @@ public class SpawnPoint : MonoBehaviour
     public void SpawnEnemy(GameObject enemyPrefab)
     {
         // Spawn the enemy
-        Instantiate(enemyPrefab, transform.position, Quaternion.identity);
+        Instantiate(enemyPrefab, transform.position, transform.rotation);
 
         // Reset the cooldown
         nextSpawnTime = Time.time + cooldownTime;

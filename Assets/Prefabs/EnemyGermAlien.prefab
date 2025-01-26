@@ -358,7 +358,7 @@ MonoBehaviour:
   toxicGasPrefab: {fileID: 1115380553887278499, guid: 9795420b2d7db674f8886f0f163640dc,
     type: 3}
   attackPoint: {fileID: 5976391351110427372}
-  attackRange: 30
+  attackRange: 100
   toxicGasSpeed: 5
 --- !u!54 &8566418275418687090
 Rigidbody:

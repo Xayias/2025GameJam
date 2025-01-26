@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: WaveTwo
   m_EditorClassIdentifier: 
   waveName: Wave 2
-  enemyCounts: 060000000100000000000000
+  enemyCounts: 040000000100000000000000
