@@ -61,7 +61,9 @@ public class GameManager : MonoBehaviour
         // Clear the static list of control points
         ControlPoint.ClearAllControlPoints();
 
-        string currentSceneName = SceneManager.GetActiveScene().name;
-        SceneManager.LoadScene(currentSceneName);
+        SceneManager.LoadScene("MainMenu");
+
+        //string currentSceneName = SceneManager.GetActiveScene().name;
+        //SceneManager.LoadScene(currentSceneName);
     }
 }
